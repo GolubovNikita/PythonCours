@@ -15,6 +15,7 @@ class Film:
         self.page = page
         self.date = []
         self.genre = []
+        self.popular = []
 
     def get_page(self):
         for i in range(1, self.page):
@@ -32,7 +33,7 @@ class Film:
 
     def get_info_with_key(self, keywords):
         for move in self.date:
-            if any(keywords in move['overview'] for keyword in keywords):
+            if any(keyword in move['overview'] for keyword in keywords):
                 return move['title']
 
     def get_genre(self):
@@ -42,7 +43,15 @@ class Film:
         return fset
 
     def delete_genre(self, genre):
-        ...
+        for i in self.date:
+            if i['genre_ids'] in genre:
+                self.date.remove(i)
+
+    def name_most_popular_genre(self):
+        count = []
+        for i in self.date:
+            for j in i['genre_ids']:
+                count[j] += 1
 
 
 x = Film(5)
@@ -52,3 +61,5 @@ pprint(x.get_page_with_steps())
 pprint(x.most_popular_film())
 pprint(x.get_info_with_key('emerges'))
 pprint(x.get_genre())
+pprint(x.delete_genre([18]))
+pprint(x.name_most_popular_genre())
