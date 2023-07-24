@@ -1,5 +1,7 @@
 from pprint import pprint
 import requests as rq
+from datetime import datetime, timedelta
+import csv
 
 # https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&sort_by=popularity.desc&page={!!!!}
 # https://api.themoviedb.org/3/genre/movie/list?language=en
@@ -47,11 +49,40 @@ class Film:
             if i['genre_ids'] in genre:
                 self.date.remove(i)
 
-    def name_most_popular_genre(self):
-        count = []
+    def collection_group(self, id):
+        genre = []
         for i in self.date:
-            for j in i['genre_ids']:
-                count[j] += 1
+            if id in i['genre_ids']:
+                genre.append({i['title']: i['genre_ids']})
+        return genre
+
+    def copy_replace(self):
+        copy_date = self.date.copy()
+        for i in copy_date:
+            i['genre_ids'][0] = 22
+        return copy_date
+
+    def collection_structure(self):
+        co_str = []
+        for i in self.date:
+            title = i['title']
+            popular = round(i['popularity'], 1)
+            score = int(i['vote_average'])
+            rd = datetime.strptime(i['release_date'], '%Y-%m-%d')
+            relise = rd + timedelta(weeks=14)
+            co_str.append({'popularity': popular,
+                           'vote_average': score,
+                           'release_date': relise,
+                           'title': title})
+        co_str.sort(key=lambda i: i['vote_average'])
+        return co_str
+
+    def write_to_file(self, params, filename):
+        with open(filename, 'w', newline="") as file:
+            filed = ['title', 'popularity', 'vote_average', 'release_date']
+            csv_write = csv.DictWriter(file, fieldnames=filed)
+            csv_write.writeheader()
+            csv_write.writerow(params)
 
 
 x = Film(5)
@@ -62,4 +93,8 @@ pprint(x.most_popular_film())
 pprint(x.get_info_with_key('emerges'))
 pprint(x.get_genre())
 pprint(x.delete_genre([18]))
-pprint(x.name_most_popular_genre())
+pprint(x.collection_group(28))
+pprint(x.copy_replace())
+pprint(x.collection_structure())
+p = x.collection_structure()
+x.write_to_file(p[0], 'file.csv')
